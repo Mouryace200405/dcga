@@ -1,4 +1,4 @@
-name: Daily Contribution
+name: Daily GitHub Archive
 
 on:
   schedule:
@@ -9,21 +9,30 @@ permissions:
   contents: write
 
 jobs:
-  daily:
+  archive:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Update daily file
+      - name: Fetch daily GitHub data
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Last contribution: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > daily.txt
+          mkdir -p data
+          DATE=$(date -u '+%Y-%m-%d')
 
-      - name: Commit
+          curl -fsSL \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/search/repositories?q=created:$DATE&sort=stars&order=desc&per_page=20" \
+            > "data/$DATE.json"
+
+      - name: Commit archive
         run: |
           git config user.name "Mouryace200405"
           git config user.email "mouryachittibabu@gmail.com"
-          git add daily.txt
-          git commit -m "chore: daily contribution" || exit 0
+          git add data/
+          git commit -m "data: daily GitHub archive $(date -u '+%Y-%m-%d')" || exit 0
           git push
