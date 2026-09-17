@@ -1,0 +1,29 @@
+name: Daily Contribution
+
+on:
+  schedule:
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update daily file
+        run: |
+          echo "Last contribution: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > daily.txt
+
+      - name: Commit
+        run: |
+          git config user.name "Mouryace200405"
+          git config user.email "mouryachittibabu@gmail.com"
+          git add daily.txt
+          git commit -m "chore: daily contribution" || exit 0
+          git push
